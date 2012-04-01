@@ -1,0 +1,9 @@
+#[link(
+   name = "search",
+   vers = "0.3",
+   uuid = "14ebecab-ef05-430b-8310-96890a5ea71f",
+   url = "https://github.com/killerswan/boyer-moore-search")];
+
+#[crate_type = "lib"];
+
+
