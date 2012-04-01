@@ -1,0 +1,10 @@
+*.swp
+*.exe
+*~
+*.o
+*.tmp
+*.so
+main
+
+
+
