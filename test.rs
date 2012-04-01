@@ -62,6 +62,14 @@ fn test_boyer_moore_search() {
 }
 
 #[test]
+fn test_BMH_search() {
+  let data = "abcabc";
+  assert search::boyer_moore_horspool_search(data, "ab", 2u, 0u, 6u) == [0u, 3u];
+  assert search::boyer_moore_horspool_search(data, "ab", 1u, 0u, 6u) == [0u];
+  assert search::boyer_moore_horspool_search(data, "ax", 1u, 0u, 6u) == [];
+}
+
+#[test]
 fn test_findn_str() {
   assert []       == findn_str("banana", "apple pie", 1u);
   assert [0u]     == findn_str("abcxxxxxx", "abc", 1u);

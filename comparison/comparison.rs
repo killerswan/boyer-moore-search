@@ -8,13 +8,19 @@ fn BM(haystack: str, needle: str) -> [uint] {
                            0u, str::len(haystack))
 }
 
+fn BMH(haystack: str, needle: str) -> [uint] {
+   search::boyer_moore_horspool_search(haystack, needle,
+                           str::len(haystack),
+                           0u, str::len(haystack))
+}
+
 fn simple(haystack: str, needle: str) -> [uint] {
    search::simple_search(haystack, needle,
                       str::len(haystack),
                       0u, str::len(haystack))
 }
 
-fn compareHN(hlen: uint, nlen: uint) -> float {
+fn compareHN(hlen: uint, nlen: uint) -> (float, float) {
    // some strings to test
    let generator = rand::rng();
    let needle   = generator.gen_str(nlen);
@@ -25,11 +31,15 @@ fn compareHN(hlen: uint, nlen: uint) -> float {
       = meow::measure_time_and_value({|| simple(haystack, needle)});
    let (bm_val, bm_time)
       = meow::measure_time_and_value({|| BM(haystack, needle)});
+   let (bmh_val, bmh_time)
+      = meow::measure_time_and_value({|| BMH(haystack, needle)});
 
    assert sim_val == bm_val;
+   assert sim_val == bmh_val;
 
-   // return the ratio
-   ret sim_time as float / bm_time as float;
+   // return the ratios
+   ret (sim_time as float / bm_time  as float,
+        sim_time as float / bmh_time as float)
 }
 
 fn main() {
@@ -56,13 +66,16 @@ Nunc eget leo ipsum. Nulla facilisi. Nam adipiscing justo id nisl aliquam at pos
    let (num_n, num_h) = (100u, 90u);
    let (mult_n, mult_h) = (4u, 100u);
    let row1 = vec::to_mut(vec::from_elem(num_n, 1.0f));
-   let result = vec::to_mut(vec::from_elem(num_h, row1));
+   let bm_result  = vec::to_mut(vec::from_elem(num_h, row1));
+   let bmh_result = vec::to_mut(vec::from_elem(num_h, row1));
    let mut nn = 0u;
    while nn < num_n {
       let mut hh = 0u;
       while hh < num_h {
          // save a grid of ratio of time
-         result[hh][nn] = compareHN(1u+hh*mult_h, 1u+nn*mult_n);
+         let (bm_ratio, bmh_ratio) = compareHN(1u+hh*mult_h, 1u+nn*mult_n);
+         bm_result[hh][nn]  = bm_ratio;
+         bmh_result[hh][nn] = bmh_ratio;
 
          hh += 1u;
       }
@@ -119,13 +132,12 @@ Nunc eget leo ipsum. Nulla facilisi. Nam adipiscing justo id nisl aliquam at pos
    io::println("### paste into Octave or Matlab... ###################");
 
    // output to octave/matlab
-   let (xs, ys, ratio) = matlab_data_2d(result);
-   io::println("ratio     = [" + ratio + "];");
+   let (xs, ys, ratio) = matlab_data_2d(bm_result);
+   io::println("ratio_bm  = [" + ratio + "];");
    io::println("needles   = [" + xs + "];");
    io::println("haystacks = [" + ys + "];");
 
-   io::println("%contourf(needles, haystacks, ratio, [0.0 : 0.5 : 10.0]);");
-   io::println("contourf(needles, haystacks, ratio, [0.0 : 0.5 : 3.0]);");
+   io::println("contourf(needles, haystacks, ratio_bm, [0.0 : 0.5 : 3.0]);");
    io::println("xlabel('needle size');");
    io::println("ylabel('haystack size');");
    io::println("title('basic search time / Boyer-Moore time');");
@@ -134,7 +146,23 @@ Nunc eget leo ipsum. Nulla facilisi. Nam adipiscing justo id nisl aliquam at pos
    io::println("colormap('cool');");
    io::println("colorbar;");
    io::println("");
-   io::println("print('data.svg', '-dSVG');");
+   io::println("print('data_bm.svg', '-dSVG');");
+
+   let (xs, ys, ratio) = matlab_data_2d(bmh_result);
+   io::println("ratio_bmh = [" + ratio + "];");
+   io::println("needles   = [" + xs + "];");
+   io::println("haystacks = [" + ys + "];");
+
+   io::println("contourf(needles, haystacks, ratio_bmh, [0.0 : 0.5 : 3.0]);");
+   io::println("xlabel('needle size');");
+   io::println("ylabel('haystack size');");
+   io::println("title('basic search time / Boyer-Moore-Horspool time');");
+   io::println("xlim([min(needles) max(needles)]);");
+   io::println("ylim([min(haystacks) max(haystacks)]);");
+   io::println("colormap('cool');");
+   io::println("colorbar;");
+   io::println("");
+   io::println("print('data_bmh.svg', '-dSVG');");
 
    io::println("######################################################");
 }

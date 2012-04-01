@@ -1,11 +1,18 @@
 // An implementation of the Boyer-Moore search algorithm in Rust (0.2 pre)
 
 export
+   // brute force
    simple_search,
+
+   // boyer-moore
    boyer_moore_search, 
    boyer_moore_unmatched_chars,
    boyer_moore_largest_suffixes,
-   boyer_moore_matching_suffixes;
+   boyer_moore_matching_suffixes,
+
+   // boyer-moore-horspool
+   boyer_moore_horspool_search;
+
 
 #[doc = "
 Returns up to `nn` byte positions of matched substrings
@@ -293,4 +300,87 @@ fn boyer_moore_matching_suffixes(needle: str) -> [uint] {
     ret vec::from_mut(deltas);
 }
 
+
+#[doc = "the same, but Boyer-Moore-Horspool"]
+fn boyer_moore_horspool_search (haystack: str, needle: str,
+                      nn: uint,
+                      start: uint, end: uint) -> [uint] {
+    let mut results = [];
+
+    let nlen = str::len(needle);
+
+    assert start <= end;
+    assert end <= str::len(haystack);
+    let hlen = end - start;
+
+    // empty needle
+    if nlen == 0u {
+        ret [start];
+    }
+
+    // haystack empty, or smaller than needle
+    if hlen == 0u || hlen < nlen {
+        ret [];
+    }
+
+    // generate the tables
+    let ct = boyer_moore_unmatched_chars(needle);
+//    let pt = boyer_moore_matching_suffixes(needle);
+
+    // query both tables based on position
+    // within the needle and character in haystack
+    let getShift = fn@(pos: uint, ch: u8) -> uint {
+        let matchedSoFar = nlen - 1u - pos;
+        let rawCharShift = ct[ch as uint];
+//        let prefShift    = pt[matchedSoFar];
+
+        if rawCharShift >= matchedSoFar {
+           let adjCharShift = rawCharShift - matchedSoFar;
+
+//           if adjCharShift > prefShift {
+               ret adjCharShift;
+//           }
+        }
+
+//        ret prefShift;
+        ret 1u;
+    };
+
+    // step up through the haystack
+    let mut outerii = start;
+    while outerii + nlen <= end {
+
+        // step back through needle
+        // (checking outer range again)
+        let mut windowii = nlen;
+        while 0u < windowii {
+
+            windowii -= 1u;
+
+            // matching byte?
+            if needle[windowii] == haystack[outerii+windowii] {
+
+                // needle fully matched?
+                // note: last decremented windowii
+                if windowii == 0u {
+                    vec::push(results, outerii);
+
+                    if vec::len(results) >= nn { ret results; }
+
+                    outerii += nlen;
+                }
+
+                // if not fully matched, leave outerii alone
+                // but decrement the windowii
+
+            } else {
+                // no match or a partial match
+                outerii += getShift(windowii, haystack[outerii+windowii]);
+                break;
+            }
+        }
+    }
+
+    ret results;
+}
 
