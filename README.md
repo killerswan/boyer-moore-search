@@ -9,8 +9,8 @@ Although I had high hopes, given how small the searches done in existing Rust co
 // Kevin Cantu
 
 ## Comparison
-![Boyer-Moore and naive search performance with random strings](http://kevincantu.org/code/rust/boyer-moore/data_bm.svg)
+![Boyer-Moore and naive search performance with random strings](/comparison/results/data_bm.svg)
 
-![Boyer-Moore-Horspool and naive search performance with random strings](http://kevincantu.org/code/rust/boyer-moore/data_bmh.svg)
+![Boyer-Moore-Horspool and naive search performance with random strings](comparison/results/data_bmh.svg)
 
 
